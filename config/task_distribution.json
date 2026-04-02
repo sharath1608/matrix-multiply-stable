@@ -20,7 +20,7 @@
   "dependencies": {
     "serial_measurements": [],
     "parallel_thmgr_measurements": ["preprocessing"],
-    "parallel_direct_measurements": ["preprocessing","parallel_thmgr_measurements"],
+    "parallel_direct_measurements": ["preprocessing"],
     "curve_fitting": [
       "serial_measurements",
       "parallel_thmgr_measurements",
