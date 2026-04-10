@@ -278,7 +278,7 @@ cluster_config_path="config/cluster.json"
 task_config_path="config/task_distribution.json"
 profiler_config_path="config/profiler.json"
 worker_script_path="./worker.sh"
-fit_script_path="/usr/bin/fit.py"
+fit_script_path="/usr/bin/fit-multivar.py"
 
 safe_repo_name=$(echo "$repo_name" | tr -cs '[:alnum:]' '_')
 job_root="jobs/${safe_repo_name}_${id}"
