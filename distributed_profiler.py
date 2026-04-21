@@ -436,19 +436,14 @@ class DistributedProfiler:
         groups = [
             self._dispatch_group("serial_measurements", parallel_mode=True),
             self._dispatch_group("parallel_thmgr_measurements", parallel_mode=True),
+            self._dispatch_group("parallel_direct_measurements", parallel_mode=True)
         ]
-
-        if not self.skip_direct_profiling:
-            groups.append(self._dispatch_group("parallel_direct_measurements", parallel_mode=True))
 
         await asyncio.gather(*groups)
 
         # Update progress after all groups complete
         async with self._progress_lock:
-            progress_increment = self.serial_progress + self.thmgr_progress
-            if not self.skip_direct_profiling:
-                progress_increment += self.direct_progress
-            self._current_progress += progress_increment
+            self._current_progress += self.serial_progress + self.thmgr_progress + self.direct_progress
 
         await self._update_progress(
             status="In progress",
@@ -636,6 +631,7 @@ class DistributedProfiler:
 
         if group_name == "serial_measurements":
             for idx, iva in enumerate(self.iva_values):
+
                 serial_time_args = [
                     "bash",
                     worker_path,
@@ -702,26 +698,28 @@ class DistributedProfiler:
         elif group_name == "parallel_direct_measurements":
             parallel_iva = self.iva_values[-1] if self.iva_values else str(self.iva_data)
             for idx, core in enumerate(self.core_values):
-                parallel_time_args = [
-                    "bash",
-                    worker_path,
-                    "parallel_time",
-                    str(self.job_dir),
-                    str(self.temp_dir),
-                    self.algo,
-                    str(core),
-                    str(parallel_iva),
-                    str(idx),
-                ]
-                tasks.append(
-                    Task(
-                        name=f"parallel-time-{idx}",
-                        group=group_name,
-                        remote_args=parallel_time_args,
-                        timeout=timeout,
-                        retries=retries,
+
+                if not self.skip_direct_profiling:
+                    parallel_time_args = [
+                        "bash",
+                        worker_path,
+                        "parallel_time",
+                        str(self.job_dir),
+                        str(self.temp_dir),
+                        self.algo,
+                        str(core),
+                        str(parallel_iva),
+                        str(idx),
+                    ]
+                    tasks.append(
+                        Task(
+                            name=f"parallel-time-{idx}",
+                            group=group_name,
+                            remote_args=parallel_time_args,
+                            timeout=timeout,
+                            retries=retries,
+                        )
                     )
-                )
 
                 parallel_mem_args = [
                     "bash",
