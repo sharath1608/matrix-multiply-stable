@@ -280,9 +280,9 @@ ANALYTICS_GENERATION_PROGRESS=10
 repo_path="/data/repo-import/$repo_name"
 delay=0  # No delay needed with per-request socket implementation
 
-cluster_config_path="config/cluster.json"
-task_config_path="config/task_distribution.json"
-profiler_config_path="config/profiler.json"
+cluster_config_path="/app/config/cluster.json"
+task_config_path="/app/config/task_distribution.json"
+profiler_config_path="/app/config/profiler.json"
 worker_script_path="./worker.sh"
 fit_script_path="/usr/bin/fit-multivar.py"
 
