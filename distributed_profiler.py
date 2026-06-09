@@ -1131,7 +1131,58 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
     return args
 
 
+def _resolve_analysis_file_from_args(args: argparse.Namespace) -> Optional[Path]:
+    """Derive analysis file path from parsed args, mirroring DistributedProfiler logic."""
+    try:
+        path = Path(args.analysis_file)
+        if path.is_absolute():
+            return path
+        return (Path(args.repo_path).resolve() / path).resolve()
+    except Exception:
+        return None
+
+
+def _write_error_state(
+    analysis_file: Path, args: argparse.Namespace, error_message: str
+) -> None:
+    """Write a failure record to analysis.json so the error surfaces via the API."""
+    try:
+        existing: Dict[str, Any] = {}
+        if analysis_file.exists():
+            try:
+                with analysis_file.open("r", encoding="utf-8") as fh:
+                    existing = json.load(fh)
+            except Exception:
+                pass
+
+        record = {
+            "id": existing.get("id", ""),
+            "repo": existing.get("repo", getattr(args, "repo", "")),
+            "repoName": existing.get("repoName", getattr(args, "repo_name", "")),
+            "startTime": existing.get("startTime", getattr(args, "start_time", "")),
+            "endTime": "",
+            "status": "Failed",
+            "progress": existing.get(
+                "progress",
+                {"currentStep": "Distributed Measurements", "nextStep": "None", "percent": 0},
+            ),
+            "result": {
+                "errorCode": 1004,
+                "message": error_message,
+                "repo": "",
+            },
+        }
+        ensure_dir(analysis_file.parent)
+        tmp_path = analysis_file.with_suffix(".tmp")
+        write_json(tmp_path, record)
+        tmp_path.replace(analysis_file)
+        logging.info("Error state written to %s", analysis_file)
+    except Exception as exc:
+        logging.warning("Failed to write error state to %s: %s", analysis_file, exc)
+
+
 def main(argv: Sequence[str]) -> int:
+    args = None
     try:
         args = parse_args(argv)
         setup_logger(args.verbose)
@@ -1145,6 +1196,10 @@ def main(argv: Sequence[str]) -> int:
         asyncio.run(profiler.run())
     except (ConfigError, TaskError) as exc:
         logging.error("%s", exc)
+        if args is not None:
+            analysis_file = _resolve_analysis_file_from_args(args)
+            if analysis_file is not None:
+                _write_error_state(analysis_file, args, str(exc))
         return 1
     except KeyboardInterrupt:
         logging.warning("Interrupted by user")
