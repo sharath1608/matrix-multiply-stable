@@ -303,16 +303,29 @@ if [[ -d "$job_dir" ]]; then
   rm -rf "$job_dir"
 fi
 
+# Add timeout to prevent hanging if thread manager is unresponsive
 if check_abort $repo_path; then exit 2; fi
 
+curl_timeout=30
+
 echo "Loading repository into thread manager..."
-load_response=$(curl -s -X POST -H "Content-Type: application/json" -d @- $thmgr_api/load <<EOF_LOAD
+load_response=$(curl -s -X POST -H "Content-Type: application/json" -d @- --max-time $curl_timeout $thmgr_api/load <<EOF_LOAD
 {
   "repo": "$repo_name"
 }
 EOF_LOAD
 )
+
+load_exit_code=$?
 echo "Load response: $load_response"
+
+if [[ $load_exit_code -eq 28 ]]; then
+  echo "Error: thread manager/load request timed out after ${curl_timeout}s" >&2
+  exit 1
+elif [[ $load_exit_code -ne 0 ]]; then
+  echo "Error: thread manager/load request failed (exit code: $load_exit_code)" >&2
+  exit 1
+fi
 
 current_progress=$progress
 
