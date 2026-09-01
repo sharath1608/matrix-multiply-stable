@@ -3,7 +3,7 @@ set -o pipefail
 
 usage()
 {
-  echo "Usage: $0 <algorithm> <iva> <iva data> <iva data file> <core count file> <power profile file> <time serial analytics file> <time parallel analytics file> <time parallel slow analytics file> <space serial analytics file> <space parallel analytics file> <power serial analytics file> <power parallel analytics file> <energy serial analytics file> <energy parallel analytics file> <speedup analytics file> <freeup analytics file> <powerup analytics file> <energyup analytics file> <id> <repo> <repo name> <start time> <progress> <thmgr api> <thmgr lib dir>"
+  echo "Usage: $0 <algorithm> <iva> <iva data> <iva data file> <power profile file> <time serial analytics file> <time parallel analytics file> <time parallel slow analytics file> <space serial analytics file> <space parallel analytics file> <power serial analytics file> <power parallel analytics file> <energy serial analytics file> <energy parallel analytics file> <speedup analytics file> <freeup analytics file> <powerup analytics file> <energyup analytics file> <id> <repo> <repo name> <start time> <progress> <thmgr api> <thmgr lib dir>"
   exit 1
 }
 
@@ -99,7 +99,7 @@ power_for_core() {
 }
 
 if [ "$#" -ne 32 ]; then
-    echo "Invalid number of parameters. Expected:33 Passed:$#"
+    echo "Invalid number of parameters. Expected:32 Passed:$#"
     usage
 fi
 
@@ -113,28 +113,28 @@ argc=$7
 iva_name=$8
 iva_data=$9
 iva_data_file=${10}
-power_profile_file=${12}
-time_serial_analytics_file=${13}
-time_parallel_analytics_file=${14}
-time_parallel_slow_analytics_file=${15}
-space_serial_analytics_file=${16}
-space_parallel_analytics_file=${17}
-power_serial_analytics_file=${18}
-power_parallel_analytics_file=${19}
-energy_serial_analytics_file=${20}
-energy_parallel_analytics_file=${21}
-speedup_analytics_file=${22}
-freeup_analytics_file=${23}
-powerup_analytics_file=${24}
-energyup_analytics_file=${25}
-id=${26}
-repo=${27}
-repo_name=${28}
-start_time=${29}
-progress=${30}
-thmgr_api=${31}
-thmgr_lib_dir=${32}
-skip_direct_profiling=${33}
+power_profile_file=${11}
+time_serial_analytics_file=${12}
+time_parallel_analytics_file=${13}
+time_parallel_slow_analytics_file=${14}
+space_serial_analytics_file=${15}
+space_parallel_analytics_file=${16}
+power_serial_analytics_file=${17}
+power_parallel_analytics_file=${18}
+energy_serial_analytics_file=${19}
+energy_parallel_analytics_file=${20}
+speedup_analytics_file=${21}
+freeup_analytics_file=${22}
+powerup_analytics_file=${23}
+energyup_analytics_file=${24}
+id=${25}
+repo=${26}
+repo_name=${27}
+start_time=${28}
+progress=${29}
+thmgr_api=${30}
+thmgr_lib_dir=${31}
+skip_direct_profiling=${32}
 
 serial_measurement=serial.csv
 parallel_measurement=parallel.csv
