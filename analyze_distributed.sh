@@ -98,7 +98,7 @@ power_for_core() {
   fi
 }
 
-if [ "$#" -ne 33 ]; then
+if [ "$#" -ne 32 ]; then
     echo "Invalid number of parameters. Expected:33 Passed:$#"
     usage
 fi
@@ -113,7 +113,6 @@ argc=$7
 iva_name=$8
 iva_data=$9
 iva_data_file=${10}
-core_count_file=${11}
 power_profile_file=${12}
 time_serial_analytics_file=${13}
 time_parallel_analytics_file=${14}
@@ -158,7 +157,10 @@ rm -f $time_serial_analytics_file $time_parallel_analytics_file $time_parallel_s
 echo "cleanup done"
 
 { IFS=, read -ra iva_arr_names; readarray -t iva_arr; } < $iva_data_file
-readarray -t core_arr < $core_count_file
+
+# Get core count from output of nproc --all
+core_count=$(nproc --all)
+echo "Core count: $core_count"
 
 echo "read array files"
 
@@ -167,6 +169,11 @@ power_profile=()
 while IFS=, read -r i p;
 do power_profile+=($p);
 done < $power_profile_file
+
+if (( core_count > ${#power_profile[@]} )); then
+  echo "Error: core count ($core_count) exceeds power profile entries (${#power_profile[@]})" >&2
+  exit 1
+fi
 
 # Extract first column from iva_arr for analytics JSON outputs
 iva_first=()
@@ -185,9 +192,8 @@ do
   iva+=("${cols[0]}")
 done
 
-for i in ${core_arr[@]}
-do
-  core+=($i)
+for ((i=1; i<=core_count; i++)); do
+  core+=("$i")
 done
 
 # generate compile_commands.json
@@ -350,7 +356,6 @@ echo "thmgr_api: $thmgr_api"
 echo "iva_values: ${iva_arr[@]}"
 echo "core_values: ${core[@]}"
 echo "iva_data_file: $iva_data_file"
-echo "core_count_file: $core_count_file"
 echo "power_profile_file: $power_profile_file"
 echo "serial_progress: $SERIAL_PROGRESS"
 echo "request_delay: $delay"
@@ -386,7 +391,6 @@ python3 distributed_profiler.py \
   --iva-values "${iva_arr[@]}" \
   --core-values "${core[@]}" \
   --iva-data-file "$iva_data_file" \
-  --core_count_file "$core_count_file" \
   --power_profile_file "$power_profile_file" \
   --serial-progress "$SERIAL_PROGRESS" \
   --request-delay "$delay" \

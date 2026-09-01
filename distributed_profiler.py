@@ -215,7 +215,6 @@ class DistributedProfiler:
         self.request_delay = float(args.request_delay)
 
         self.iva_file = self._job_path_for(args.iva_data_file)
-        self.core_file = self._job_path_for(args.core_count_file)
         self.power_profile_path = self._job_path_for(args.power_profile_file)
         self.measurement_summary_path = self.job_dir / "measurement_summary.json"
 
@@ -1086,9 +1085,6 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
     )
 
     parser.add_argument("--iva-data-file", help="Path to IVA data file")
-    parser.add_argument(
-        "--core_count_file", dest="core_count_file", help="Path to core count file"
-    )
     parser.add_argument("--skip-direct-profiling", default="false", help="Whether to skip direct parallel profiling")
     parser.add_argument("--power_profile_file", help="Path to power profile file")
 
