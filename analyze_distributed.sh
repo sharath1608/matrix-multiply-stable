@@ -158,8 +158,8 @@ echo "cleanup done"
 
 { IFS=, read -ra iva_arr_names; readarray -t iva_arr; } < $iva_data_file
 
-# Get core count from output of nproc --all
-core_count=$(nproc)
+# Get physical core count lscpu
+core_count=$(lscpu -p=CORE,SOCKET 2>/dev/null| sort -u | grep -v '^[[:space:]]*$\|^[[:space:]]*#'| wc -l)
 echo "Core count: $core_count"
 
 echo "read array files"
